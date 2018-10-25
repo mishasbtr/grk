@@ -1,0 +1,28 @@
+Link to instructions (labs 1-4):
+https://sites.google.com/pjwstk.edu.pl/grk/grk-english
+
+
+https://threejs.org/  --- examples
+https://www.blend4web.com/en/demo/chevrolet-3d-car-configurator/
+
+
+- Each student receives two grades and the end of the semester. One grade is based on laboratory classes ("Zaliczenie", graded by lab teachers), and another grade
+is based on lectures and an exam ("Egzamin", graded by a lecturer).
+
+- The semester consists of 15 weeks of classes.
+
+- Laboratory classes include 7 units, 4 hours (4*45 minutes) each.    
+The last 2 hours (2*45 minutes) are designed for grading, and possibly make up for missed grades.
+
+- Each unit is graded 2-5. Grade 2 is assigned if a student is present but minimal requirements for a positive grade are not met.
+
+- In the case of absences:
+  - 2 missed hours (2*45 minutes) - lower grade for the unit
+  - 4 missed hours (4*45 minutes) - the lowest obtained grade is canceled and replaced with 0
+  - more than 4 missed hours: student failed.
+ 
+- In the case of an excused absence, the student should make up for the missed class. The student should ask the teacher for instructions, as in this case the tasks will be changed.
+
+- Information on grading for each unit is given in the instructions (depending on the tasks completed)
+
+- The final grade is calculated as the average of the obtained 7 grades/points.

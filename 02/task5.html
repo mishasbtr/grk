@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>task 5</title>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.7/p5.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        function preload() {
+            img = loadImage(
+                "https://raw.githubusercontent.com/scikit-image/scikit-image/master/skimage/data/astronaut.png");
+        }
+
+        function setup() {
+            createCanvas(256, 256);
+            img.resize(512, 512);
+            background('white');
+            stroke('black');
+
+            var histogram = new Array(256);
+            histogram.fill(0, 0, 256);
+
+            img.filter('gray');
+            img.loadPixels();
+
+            // analyzing:
+            // pixelDensity(1);
+            for (let x = 0; x < img.width; x++) {
+                for (let y = 0; y < img.height; y++) {
+                    pos = 4 * (y * img.width + x);
+                    let r = img.pixels[pos];
+                    let g = img.pixels[pos + 1];
+                    let b = img.pixels[pos + 2];
+
+                    histogram[r]++;
+                }
+            }
+
+            let scaleFactor = Math.max(...histogram) / 2700;
+            for (let x = 0; x < width; x++) {
+                let h = height - (histogram[x]) / scaleFactor;
+                line(x, height, x, h);
+            }
+        }
+    </script>
+</body>
+
+</html>

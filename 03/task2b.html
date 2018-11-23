@@ -2,7 +2,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>task 1</title>
+    <title>task 2b</title>
     <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.7/p5.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
     <style> body { background-color:#ccc; } </style>
@@ -45,9 +45,14 @@
 
         function set_pixel(x, y, c) {
             idx = (y * 512 + x) * 4;
-            pixels[idx] = c;
-            pixels[idx + 1] = c;
-            pixels[idx + 2] = c;
+            if (c < 0) {
+                pixels[idx] = -c; //r
+                pixels[idx + 1] = 0; //g
+            } else if (c > 0) {
+                pixels[idx] = 0; //r
+                pixels[idx + 1] = c; //g
+            }
+            pixels[idx + 2] = 0; //b
             pixels[idx + 3] = 255;
         }
 
@@ -57,13 +62,12 @@
             let a = dy / dx;
             let b = y0 - a * x0;
 
-            // console.log(`x0=${x0} x1=${x1} a=${a}`);
-            for (let x = x0; x < x1; x++) {
-                let y = a * x + b;
-                x = Math.round(x);
-                y = Math.round(y);
-                set_pixel(x, y, 0);
-                // console.log(`x=${x} y=${y}`);
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    let dxy = (dy / dx) * (x - x0) - (y - y0);
+                    let dxy2 = dxy * 2 * dx;
+                    set_pixel(x, y, dxy2);
+                }
             }
             updatePixels();
         }

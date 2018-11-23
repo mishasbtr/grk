@@ -2,7 +2,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>task 1</title>
+    <title>task 3</title>
     <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.7/p5.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
     <style> body { background-color:#ccc; } </style>
@@ -54,16 +54,20 @@
         function draw_line() {
             let dx = x1 - x0;
             let dy = y1 - y0;
-            let a = dy / dx;
-            let b = y0 - a * x0;
+            let dp = 2 * dy - dx;
+            let deq = 2 * dy;
+            let dinc = 2 * dy - 2 * dx;
 
-            // console.log(`x0=${x0} x1=${x1} a=${a}`);
-            for (let x = x0; x < x1; x++) {
-                let y = a * x + b;
-                x = Math.round(x);
-                y = Math.round(y);
+            let d = dp;
+            let y = y0;
+            for (let x = x0; x <= x1; x++) {
                 set_pixel(x, y, 0);
-                // console.log(`x=${x} y=${y}`);
+                if (d < 0) {
+                    d += deq;
+                } else {
+                    d += dinc;
+                    y++;
+                }
             }
             updatePixels();
         }

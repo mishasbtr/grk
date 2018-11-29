@@ -11,27 +11,19 @@
         body {
             background-color: #ccc;
         }
+        #button-panel {
+            display: flex;
+            flex-direction: row;
+        }
     </style>
 </head>
 
 <body>
-
-    <button onclick="show()">Show</button>
-    <button onclick="reset()">Reset</button>
-    <button onclick="apply()">Apply</button>
-    <button onclick="change()">Change</button><br><br>
-
-    <div id="matrices"></div>
-    <div id="inputs"></div>
-    <div id="consequentMatrices"></div><br><br>
-
     <script type="text/javascript">
-        var imgA;
-        var imgB;
-        var vec = [];
-        var currentMatrix = makeIdentity();
-        var sequence = [];
-        var consequentMatrices = [];
+        let imgA;
+        let imgB;
+        let transformationMatrix = makeIdentity();
+        let appliedTransformation;
 
         function setup() {
             createCanvas(512, 512);
@@ -40,13 +32,12 @@
             imgB = createImage(512, 512);
             imgA.loadPixels();
             imgB.loadPixels();
-            var d = pixelDensity();
-            for (var i = 0; i < 512 * 512 * 4 * d; i += 4) {
+            let d = pixelDensity();
+            for (let i = 0; i < 512 * 512 * 4 * d; i += 4) {
                 imgA.pixels[i] = 240;
                 imgA.pixels[i + 1] = 250;
                 imgA.pixels[i + 2] = 240;
                 imgA.pixels[i + 3] = 255;
-
                 imgB.pixels[i] = 240;
                 imgB.pixels[i + 1] = 240;
                 imgB.pixels[i + 2] = 250;
@@ -54,7 +45,6 @@
             }
             imgA.updatePixels();
             imgB.updatePixels();
-
         }
 
         function draw() {
@@ -67,8 +57,11 @@
             }
         }
 
-        function makeVector(x, y) {
-            return [x, y, 1];
+        function mouseDragged() {
+            let vector = makeVector(mouseX, mouseY);
+            vector = multiplyMatrixByVector(transformationMatrix, vector);
+            drawVector(imgA, vector);
+            updatePixels();
         }
 
         function drawVector(img, vec) {
@@ -76,12 +69,9 @@
             img.updatePixels();
         }
 
-        function mouseDragged() {
-            vec = makeVector(mouseX, mouseY);
-            sequence = sequence.concat([vec]);
-            drawVector(imgA, vec);
+        function makeVector(x, y) {
+            return [x, y, 1];
         }
-
 
         function makeIdentity() {
             return [
@@ -91,274 +81,140 @@
             ];
         }
 
-        function makeTranslate(x, y) {
+        function makeTranslation(tx, ty) {
             return [
-                [1, 0, x],
-                [0, 1, y],
+                [1, 0, tx],
+                [0, 1, ty],
                 [0, 0, 1]
             ];
         }
 
-        function makeScaling(x, y) {
+        function makeScaling(sx, sy) {
             return [
-                [x, 0, 0],
-                [0, y, 0],
+                [sx, 0, 0],
+                [0, sy, 0],
                 [0, 0, 1]
             ];
         }
 
-        function makeRotation(a) {
-            var rad = Math.round(a / 180 * Math.PI);
+        function makeRotation(theta) {
             return [
-                [Math.round(Math.cos(rad)), -Math.round(Math.sin(rad)), 0],
-                [Math.round(Math.sin(rad)), Math.round(Math.cos(rad)), 0],
+                [Math.cos(theta / 180 * Math.PI), -Math.sin(theta / 180 * Math.PI), 0],
+                [Math.sin(theta / 180 * Math.PI), Math.cos(theta / 180 * Math.PI), 0],
                 [0, 0, 1]
             ];
         }
 
-        function makeShear(x, y) {
+        function makeShearTransform(shx, shy) {
             return [
-                [1, x, 0],
-                [y, 1, 0],
+                [1, shx, 0],
+                [shy, 1, 0],
                 [0, 0, 1]
             ];
         }
 
-
-
-
-        function multiply(M, v) {
-
-            var w = [0, 0, 0];
-
-            for (var i = 0; i < M.length; i++) {
-                for (var j = 0; j < M[i].length; j++) {
-                    w[i] += M[i][j] * v[j];
+        function multiplyMatrixByVector(m, v) {
+            let result = Array(v.length).fill(0);
+            for (let i = 0; i < m.length; i++) {
+                for (let j = 0; j < m[i].length; j++) {
+                    result[i] += Number(m[i][j] * v[j]);
                 }
             }
-            return w;
-
+            return result;
         }
 
-        function matrixMultiply(A, B) {
-
-            var o = [];
-
-            for (var i = 0; i < B.length; i++) {
-                o[i] = multiply(A, B[i]);
+        function multiplyTwoMatrices(a, b) {
+            let result = [];
+            if (typeof b[0] === "number") {
+                return multiplyMatrixByVector(a, b);
             }
-            return o;
-
-        }
-
-        function show() {
-            consequentMatrices[0] = makeIdentity();
-
-            var exists = document.getElementById('removablePreFlag');
-
-            if (exists) {
-                document.getElementById('consequentMatrices').removeChild(exists);
-            } else {
-                var pre = document.createElement("PRE");
-                pre.setAttribute('id', "removablePreFlag");
-                document.getElementById('consequentMatrices').appendChild(pre);
-
-                for (let i = 0; i < consequentMatrices.length; i++) {
-                    for (let j = 0; j < consequentMatrices[i].length; j++) {
-                        for (let s = 0; s < consequentMatrices[i][j].length; s++) {
-                            pre.innerHTML += consequentMatrices[i][j][s] + " ";
-
-                        }
-                        pre.innerHTML += "<br>";
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        sum += a[i][k] * b[k][j];
                     }
-
+                    result[i][j] = sum;
                 }
             }
+            return result;
+        }
+
+        function multiplyMatrices(...matrices) {
+            let result = matrices[matrices.length - 1];
+            for (let i = matrices.length - 2; i >= 0; i--) {
+                result = multiplyTwoMatrices(result, matrices[i]);
+            }
+            return result;
+        }
+    </script>
+    <p id="matrix-content">
+    </p>
+    <div id="button-panel">
+        <button id="reset" onclick="reset()">Reset</button>
+
+        <button id="rotation" onclick="showOneParamForm(); appliedTransformation = makeRotation;">Rotation</button>
+        <button id="scaling" onclick="showTwoParamForm(); appliedTransformation = makeScaling;">Scaling</button>
+        <button id="translation" onclick="showTwoParamForm(); appliedTransformation = makeTranslation;">Translation</button>
+        <button id="shear" onclick="showTwoParamForm(); appliedTransformation = makeShearTransform;">Shear</button>
+
+        <form onsubmit="submitTwoParamForm(); return false;" id="2-param-form" hidden>
+            <input type="number" id="f2p1">
+            <input type="number" id="f2p2">
+            <input type="submit" value="OK">
+        </form>
+        <form onsubmit="submitOneParamForm(); return false;" id="1-param-form" hidden>
+            <input type="number" id="f1p1">
+            <input type="submit" value="OK">
+        </form>
+    </div>
+
+
+    <script>
+        document.getElementById("matrix-content").innerHTML = matrixToString(transformationMatrix);
+
+        function matrixToString(matrix) {
+            let result = "";
+            for (const row of matrix) {
+                for (const el of row) {
+                    result += el + " ";
+                }
+                result += "<br>";
+            }
+            return result;
         }
 
         function reset() {
-            currentMatrix = makeIdentity();
-            return 0;
+            transformationMatrix = makeIdentity();
+            document.getElementById("matrix-content").innerHTML = matrixToString(transformationMatrix);
+            document.getElementById("1-param-form").setAttribute("hidden", true);
+            document.getElementById("2-param-form").setAttribute("hidden", true);
         }
 
-        function clearViewB() {
-            imgA.loadPixels();
-            imgB.loadPixels();
-            var d = pixelDensity();
-            for (var i = 0; i < 512 * 512 * 4 * d; i += 4) {
-
-                if (imgA.pixels[i] == 0) {
-                    imgB.pixels[i] = 0;
-                    imgB.pixels[i + 1] = 0;
-                    imgB.pixels[i + 2] = 0;
-                    imgB.pixels[i + 3] = 255;
-                } else {
-                    imgB.pixels[i] = 240;
-                    imgB.pixels[i + 1] = 240;
-                    imgB.pixels[i + 2] = 250;
-                    imgB.pixels[i + 3] = 255;
-                }
-            }
-            imgA.updatePixels();
-            imgB.updatePixels();
+        function showOneParamForm() {
+            document.getElementById("1-param-form").removeAttribute("hidden");
+            document.getElementById("2-param-form").setAttribute("hidden", true);
         }
 
-        function showXYFields(id) {
-
-            var exists = document.getElementById('removeInputsFlag');
-
-            if (exists) {
-                document.getElementById('inputs').removeChild(exists);
-            } else {
-                var div = document.createElement("div");
-                div.setAttribute('id', "removeInputsFlag");
-                document.getElementById('inputs').appendChild(div);
-
-                var f = document.createElement("form");
-
-                var iX = document.createElement("input");
-                iX.setAttribute('type', "text");
-                iX.setAttribute('name', "X");
-                iX.setAttribute('value', 0);
-
-                var iY = document.createElement("input");
-                iY.setAttribute('type', "text");
-                iY.setAttribute('name', "Y");
-                iY.setAttribute('value', 0);
-
-                f.appendChild(iX);
-                f.appendChild(iY);
-
-                document.getElementById('removeInputsFlag').appendChild(f);
-
-                var submit = document.createElement("BUTTON");
-                var tSumbit = document.createTextNode("Submit");
-                submit.setAttribute('id', "submit");
-                submit.appendChild(tSumbit);
-                document.getElementById('removeInputsFlag').appendChild(submit);
-
-
-                submit.addEventListener("click", function () {
-                    if (id == 'translate') {
-                        currentMatrix = matrixMultiply(makeTranslate(iX.value, iY.value), currentMatrix);
-                    } else if (id == 'scale') {
-                        currentMatrix = matrixMultiply(makeScaling(iX.value, iY.value), currentMatrix);
-                    } else if (id == 'shear') {
-                        currentMatrix = matrixMultiply(makeShear(iX.value, iY.value), currentMatrix);
-                    }
-
-                    for (let vec = 0; vec < sequence.length; vec++) {
-                        drawVector(imgB, multiply(currentMatrix, sequence[vec]));
-
-                    }
-
-                });
-            }
-
-
+        function showTwoParamForm() {
+            document.getElementById("2-param-form").removeAttribute("hidden");
+            document.getElementById("1-param-form").setAttribute("hidden", true);
         }
 
-        function showAlphaFields(id) {
-            var exists = document.getElementById('removeInputsFlag');
-
-            if (exists) {
-                document.getElementById('inputs').removeChild(exists);
-            } else {
-                var div = document.createElement("div");
-                div.setAttribute('id', "removeInputsFlag");
-                document.getElementById('inputs').appendChild(div);
-
-                var f = document.createElement("form");
-
-                var i = document.createElement("input");
-                i.setAttribute('type', "text");
-                i.setAttribute('name', "alpha");
-
-                f.appendChild(i);
-
-                document.getElementById('removeInputsFlag').appendChild(f);
-
-
-                var submit = document.createElement("BUTTON");
-                var tSumbit = document.createTextNode("Submit");
-                submit.setAttribute('type', "submit");
-                submit.appendChild(tSumbit);
-                document.getElementById('removeInputsFlag').appendChild(submit);
-
-                submit.addEventListener("click", function () {
-                    /* console.log('submitted'); */
-                    /* console.log(iY.value); */
-                    /* console.log(id); */
-                    if (id == 'rotation') {
-                        currentMatrix = matrixMultiply(makeRotation(i.value), currentMatrix);
-                    }
-
-                    for (let vec = 0; vec < sequence.length; vec++) {
-                        drawVector(imgB, multiply(currentMatrix, sequence[vec]));
-
-                    }
-
-                });
-            }
-
+        function submitTwoParamForm() {
+            let p1 = Number(document.getElementById("f2p1").value);
+            let p2 = Number(document.getElementById("f2p2").value);
+            transformationMatrix = multiplyMatrices(transformationMatrix, appliedTransformation(p1, p2));
+            document.getElementById("matrix-content").innerHTML = matrixToString(transformationMatrix);
         }
 
-        function apply() {
-
-            var existsMatrices = document.getElementById('removeMatricesFlag');
-            var existsInputs = document.getElementById('removeInputsFlag');
-
-            if (existsMatrices) {
-                if (existsInputs) document.getElementById('inputs').removeChild(existsInputs);
-                document.getElementById('matrices').removeChild(existsMatrices);
-            } else {
-                var div = document.createElement("div");
-                div.setAttribute('id', "removeMatricesFlag");
-                document.getElementById('matrices').appendChild(div);
-
-                var identity = document.createElement("BUTTON");
-                var translate = document.createElement("BUTTON");
-                var scale = document.createElement("BUTTON");
-                var rotation = document.createElement("BUTTON");
-                var shear = document.createElement("BUTTON");
-
-                var tShear = document.createTextNode("Rotation");
-                var tRotation = document.createTextNode("Rotation");
-                var tScale = document.createTextNode("Scale");
-                var tTranslate = document.createTextNode("Translate");
-                var tIdentity = document.createTextNode("Identity");
-
-                identity.setAttribute('id', "identity");
-                translate.setAttribute('id', "translate");
-                scale.setAttribute('id', "scale");
-                rotation.setAttribute('id', "rotation");
-                shear.setAttribute('id', "shear");
-
-                identity.setAttribute('onclick', "");
-                translate.setAttribute('onclick', "showXYFields(this.id)");
-                scale.setAttribute('onclick', "showXYFields(this.id)");
-                rotation.setAttribute('onclick', "showAlphaFields(this.id)");
-                shear.setAttribute('onclick', "showXYFields(this.id)");
-
-
-
-                identity.appendChild(tIdentity);
-                translate.appendChild(tTranslate);
-                scale.appendChild(tScale);
-                rotation.appendChild(tRotation);
-                shear.appendChild(tShear);
-
-                document.getElementById('removeMatricesFlag').appendChild(identity);
-                document.getElementById('removeMatricesFlag').appendChild(translate);
-                document.getElementById('removeMatricesFlag').appendChild(scale);
-                document.getElementById('removeMatricesFlag').appendChild(rotation);
-                document.getElementById('removeMatricesFlag').appendChild(shear);
-            }
-        }
-
-        // TODO
-        function change() {
-
+        function submitOneParamForm() {
+            let p1 = Number(document.getElementById("f1p1").value);
+            transformationMatrix = multiplyMatrices(transformationMatrix, appliedTransformation(p1));
+            document.getElementById("matrix-content").innerHTML = matrixToString(transformationMatrix);
         }
     </script>
 </body>
+
+</html>

@@ -54,11 +54,13 @@
         function mouseDragged() {
             let vector = makeVector(mouseX, mouseY);
             //shift + rotation + scaling
-            let vectorA = multiplyMatrices(makeTranslation(10, 15), makeRotation(90), makeScaling(2, 2), vector);
+            let matrixA = multiplyMatrices(makeTranslation(10, 15), makeRotation(90), makeScaling(2, 2));
+            let vectorA = multiplyMatrixByVector(matrixA, vector);
             drawVector(imgA, vectorA);
             updatePixels();
-            //scaling + shift + scaling
-            let vectorB = multiplyMatrices(makeScaling(2, 2), makeTranslation(10, 15), makeRotation(90), vector);
+            //scaling + shift + rotation
+            let matrixB = multiplyMatrices(makeScaling(2, 2), makeTranslation(10, 15), makeRotation(90));
+            let vectorB = multiplyMatrixByVector(matrixB, vector);
             drawVector(imgB, vectorB);
             updatePixels();
         }
@@ -141,8 +143,8 @@
         }
 
         function multiplyMatrices(...matrices) {
-            let result = matrices[0];
-            for (let i = 1; i < matrices.length; i++) {
+            let result = matrices[matrices.length - 1];
+            for (let i = matrices.length - 2; i >= 0; i--) {
                 result = multiplyTwoMatrices(result, matrices[i]);
             }
             return result;

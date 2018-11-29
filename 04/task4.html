@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>task 4</title>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.7/p5.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
+    <style>
+        body {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="text/javascript">
+        let imgA;
+        let imgB;
+
+        function setup() {
+            createCanvas(512, 512);
+            background(255);
+            imgA = createImage(512, 512);
+            imgB = createImage(512, 512);
+            imgA.loadPixels();
+            imgB.loadPixels();
+            let d = pixelDensity();
+            for (let i = 0; i < 512 * 512 * 4 * d; i += 4) {
+                imgA.pixels[i] = 240;
+                imgA.pixels[i + 1] = 250;
+                imgA.pixels[i + 2] = 240;
+                imgA.pixels[i + 3] = 255;
+                imgB.pixels[i] = 240;
+                imgB.pixels[i + 1] = 240;
+                imgB.pixels[i + 2] = 250;
+                imgB.pixels[i + 3] = 255;
+            }
+            imgA.updatePixels();
+            imgB.updatePixels();
+        }
+
+        function draw() {
+            if (!keyIsDown(32)) {
+                image(imgA, 0, 0);
+                text('Image A', 10, 20);
+            } else {
+                image(imgB, 0, 0);
+                text('Image B', 10, 20);
+            }
+        }
+
+        function mouseDragged() {
+            let vector = makeVector(mouseX, mouseY);
+            //shift + rotation + scaling
+            let vectorA = multiplyMatrices(makeTranslation(10, 15), makeRotation(90), makeScaling(2, 2), vector);
+            drawVector(imgA, vectorA);
+            updatePixels();
+            //scaling + shift + scaling
+            let vectorB = multiplyMatrices(makeScaling(2, 2), makeTranslation(10, 15), makeRotation(90), vector);
+            drawVector(imgB, vectorB);
+            updatePixels();
+        }
+
+        function drawVector(img, vec) {
+            img.set(vec[0], vec[1], 0);
+            img.updatePixels();
+        }
+
+        function makeVector(x, y) {
+            return [x, y, 1];
+        }
+
+        function makeIdentity() {
+            return [
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ];
+        }
+
+        function makeTranslation(tx, ty) {
+            return [
+                [1, 0, tx],
+                [0, 1, ty],
+                [0, 0, 1]
+            ];
+        }
+
+        function makeScaling(sx, sy) {
+            return [
+                [sx, 0, 0],
+                [0, sy, 0],
+                [0, 0, 1]
+            ];
+        }
+
+        function makeRotation(theta) {
+            return [
+                [Math.cos(theta / 180 * Math.PI), -Math.sin(theta / 180 * Math.PI), 0],
+                [Math.sin(theta / 180 * Math.PI), Math.cos(theta / 180 * Math.PI), 0],
+                [0, 0, 1]
+            ];
+        }
+
+        function makeShearTransform(shx, shy) {
+            return [
+                [1, shx, 0],
+                [shy, 1, 0],
+                [0, 0, 1]
+            ];
+        }
+
+        function multiplyMatrixByVector(m, v) {
+            let result = Array(v.length).fill(0);
+            for (let i = 0; i < m.length; i++) {
+                for (let j = 0; j < m[i].length; j++) {
+                    result[i] += Number(m[i][j] * v[j]);
+                }
+            }
+            return result;
+        }
+
+        function multiplyTwoMatrices(a, b) {
+            let result = [];
+            if (typeof b[0] === "number") {
+                return multiplyMatrixByVector(a, b);
+            }
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        sum += a[i][k] * b[k][j];
+                    }
+                    result[i][j] = sum;
+                }
+            }
+            return result;
+        }
+
+        function multiplyMatrices(...matrices) {
+            let result = matrices[0];
+            for (let i = 1; i < matrices.length; i++) {
+                result = multiplyTwoMatrices(result, matrices[i]);
+            }
+            return result;
+        }
+
+        let temp = [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9]
+        ];
+    </script>
+
+</body>
+
+</html>

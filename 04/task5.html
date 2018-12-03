@@ -22,7 +22,7 @@
     <script type="text/javascript">
         let imgA;
         let imgB;
-        let transformationMatrix = makeIdentity();
+        let transformationMatrix;
         let appliedTransformation;
 
         function setup() {
@@ -172,7 +172,7 @@
 
 
     <script>
-        document.getElementById("matrix-content").innerHTML = matrixToString(transformationMatrix);
+        reset();
 
         function matrixToString(matrix) {
             let result = "";
@@ -194,11 +194,13 @@
 
         function showOneParamForm() {
             document.getElementById("1-param-form").removeAttribute("hidden");
+            document.getElementById("1-param-form").reset();
             document.getElementById("2-param-form").setAttribute("hidden", true);
         }
 
         function showTwoParamForm() {
             document.getElementById("2-param-form").removeAttribute("hidden");
+            document.getElementById("2-param-form").reset();
             document.getElementById("1-param-form").setAttribute("hidden", true);
         }
 
